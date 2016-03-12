@@ -18,7 +18,7 @@
 // The concept of spinning a karma wheel necessitates a UI control to trigger
 // the spin, hence the "tip" button, to calculate the tip amount and total
 // amount and spin the karma wheel. Since the tip amount and total amount are
-// only updated when the tip button is pressed, rather than updating them on the
+// only updated when the tip button is pressed, rather than being updated on the
 // fly, changes the user makes to the bill amount and/or tip percentage will not
 // be accurately reflected in the tip amount and total amount until the tip
 // button is pressed. In this case, to avoid confusion, the tip amount and total
