@@ -264,6 +264,9 @@ class PrimaryViewController: UIViewController
             tipPercentageLabel.textColor = UIColor.lightGrayColor()
             tipPercentLabel.textColor = UIColor.lightGrayColor()
             tipPercentageStepper.tintColor = UIColor.lightGrayColor()
+            tipButton.setTitleColor(
+                UIColor.init(white: 0.9, alpha: 1.0),
+                forState: UIControlState.Normal)
             tipAmountLabel.textColor = UIColor.lightGrayColor()
             totalLabel.textColor = UIColor.lightGrayColor()
             totalAmountLabel.textColor = UIColor.lightGrayColor()
@@ -285,6 +288,8 @@ class PrimaryViewController: UIViewController
             tipPercentageLabel.textColor = textColor
             tipPercentLabel.textColor = textColor
             tipPercentageStepper.tintColor = textColor
+            tipButton.setTitleColor(
+                nil, forState: UIControlState.Normal) // default
             tipAmountLabel.textColor = textColor
             totalLabel.textColor = textColor
             totalAmountLabel.textColor = textColor
