@@ -19,7 +19,7 @@ Time spent: **43** hours
 * [x] Making sure the keyboard is always visible and the bill amount is always the first responder. This way the user doesn't have to tap anywhere to use this app. Just launch the app and start typing.
 * [x] Add a light/dark color theme to the settings view.
 
-# Notes
+## Notes
 
 The concept behind the app is that tipping well results in good karma, while tipping poorly results in bad karma. This concept is reinforced using UI animations. When a tip percentage 15% or above is used, a green "karma wheel", three arrows in a circle, spins clockwise in the direction the arrows are pointing, indicating good karma. The higher the tip, the faster the karma wheel spins. When a tip percentage below 15% is used, the karma wheel spins counterclockwise, against the direction of the arrows, and the arrows turn red, indicating bad karma. A user probably would not want these negative karma indicators in a real-world app, but implementing these animations was a rewarding learning exercise for this project.
 
@@ -29,7 +29,7 @@ I spent a significant amount of time on this project, 43 hours over the course o
 
 The slow framerate of the gif video walkthrough can cause the spinning arrows animation to appear to stutter or spin in the opposite direction. The animations in the app are smooth.
 
-# Walkthrough
+## Walkthrough
 
 ![Video Walkthrough](TipKarmaDemo.gif)
 
