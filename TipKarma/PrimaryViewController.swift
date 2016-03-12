@@ -22,13 +22,18 @@ import UIKit
 
 class PrimaryViewController: UIViewController
 {
+    @IBOutlet var mainView: UIView!
+    @IBOutlet weak var billLabel: UILabel!
     @IBOutlet weak var billAmountTextField: UITextField!
+    @IBOutlet weak var tipLabel: UILabel!
     @IBOutlet weak var tipPercentageLabel: UILabel!
+    @IBOutlet weak var tipPercentLabel: UILabel!
     @IBOutlet weak var tipPercentageStepper: UIStepper!
     @IBOutlet weak var tipButton: UIButton!
     @IBOutlet weak var tipAmountLabel: UILabel!
     @IBOutlet weak var karmaImageViewGreen: UIImageView!
     @IBOutlet weak var karmaImageViewRed: UIImageView!
+    @IBOutlet weak var totalLabel: UILabel!
     @IBOutlet weak var totalAmountLabel: UILabel!
     
     override func viewDidLoad()
@@ -87,6 +92,10 @@ class PrimaryViewController: UIViewController
             billAmountTextField.text =
                 String(format:"%.2f", settings.loadBillAmount())
         }
+        
+        // Update views with correct theme colors.
+        setDarkColorTheme(settings.loadDarkThemeOn())
+
     }
     
     override func viewWillDisappear(animated: Bool)
@@ -228,6 +237,61 @@ class PrimaryViewController: UIViewController
         }
     }
     
+    // OPTIONAL TASK: Update views with correct theme colors for either the
+    // light color theme or the dark color theme.
+    func setDarkColorTheme(darkThemeOn: Bool)
+    {
+        // If the theme colors are already set correctly, there is no need
+        // to set them again.
+        if darkThemeOn == darkThemeColorsSet
+        {
+            return;
+        }
+        darkThemeColorsSet = darkThemeOn
+        
+        let mainViewRed = CGFloat(0.823468)
+        let mainViewGreen = CGFloat(0.894601)
+        let mainViewBlue = CGFloat(0.847952)
+        
+        if (darkThemeOn)
+        {
+            mainView.backgroundColor = UIColor.init(
+                red: mainViewRed * 0.25, green: mainViewGreen * 0.25,
+                blue: mainViewBlue * 0.25, alpha: 1)
+            billLabel.textColor = UIColor.lightGrayColor()
+            billAmountTextField.backgroundColor = UIColor.lightGrayColor()
+            tipLabel.textColor = UIColor.lightGrayColor()
+            tipPercentageLabel.textColor = UIColor.lightGrayColor()
+            tipPercentLabel.textColor = UIColor.lightGrayColor()
+            tipPercentageStepper.tintColor = UIColor.lightGrayColor()
+            tipAmountLabel.textColor = UIColor.lightGrayColor()
+            totalLabel.textColor = UIColor.lightGrayColor()
+            totalAmountLabel.textColor = UIColor.lightGrayColor()
+            navigationController!.navigationBar.barTintColor =
+                UIColor.lightGrayColor()
+        }
+        else // light color theme
+        {
+            let textRgb = CGFloat(0.235282)
+            let textColor = UIColor.init(
+                red: textRgb, green: textRgb, blue: textRgb, alpha: 1)
+            
+            mainView.backgroundColor = UIColor.init(
+                red: mainViewRed, green: mainViewGreen, blue: mainViewBlue,
+                alpha: 1)
+            billLabel.textColor = textColor
+            billAmountTextField.backgroundColor = nil // default
+            tipLabel.textColor = textColor
+            tipPercentageLabel.textColor = textColor
+            tipPercentLabel.textColor = textColor
+            tipPercentageStepper.tintColor = textColor
+            tipAmountLabel.textColor = textColor
+            totalLabel.textColor = textColor
+            totalAmountLabel.textColor = textColor
+            navigationController!.navigationBar.barTintColor = nil // default
+        }
+    }
+    
     // The bill amount from the billAmountTextField.
     var billAmount : Double
     {
@@ -246,4 +310,7 @@ class PrimaryViewController: UIViewController
     
     // The current rotation in degrees of the karma wheel.
     var currentRotationDegrees = 0.0
+    
+    // Indicates whether the view colors are set to the dark color theme colors.
+    var darkThemeColorsSet = false
 }

@@ -12,6 +12,7 @@ import UIKit
 class TipKarmaSettings
 {
     let dfltPercentageKey = "dfltTipPercentage"
+    let darkThemeOnKey = "darkThemeOn"
     let restartBillAmount = "restartBillAmount"
     let restartBillAmountAbsTime = "restartBillAmountAbsTime"
     
@@ -31,6 +32,21 @@ class TipKarmaSettings
         let defaults = NSUserDefaults.standardUserDefaults()
         let tipPercentage = defaults.integerForKey(dfltPercentageKey)
         return tipPercentage != 0 ? tipPercentage : 15
+    }
+    
+    // Save the dark them "on" NSUserDefaults.
+    func saveDarkThemeOn(darkThemeOn: Bool)
+    {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setBool(darkThemeOn, forKey: darkThemeOnKey)
+        defaults.synchronize()
+    }
+    
+    // Load the dark theme "on" from NSUserDefaults.
+    func loadDarkThemeOn() -> Bool
+    {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        return defaults.boolForKey(darkThemeOnKey)
     }
     
     // Save the "restart" bill amount to NSUserDefaults. This is used so that
@@ -68,18 +84,33 @@ class TipKarmaSettings
 
 class SettingsViewController: UIViewController
 {
+    @IBOutlet var mainView: UIView!
+    @IBOutlet weak var tipLabel: UILabel!
     @IBOutlet weak var tipPercentageLabel: UILabel!
+    @IBOutlet weak var tipPercentLabel: UILabel!
     @IBOutlet weak var tipPercentageStepper: UIStepper!
+    @IBOutlet weak var darkThemeLabel: UILabel!
+    @IBOutlet weak var darkThemeSwitch: UISwitch!
     
     override func viewDidLoad()
     {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        // Load the settings and set the tip percentage stepper and label.
+        // Load the settings and set the tip percentage stepper, tip percentage
+        // label, and dark theme switch.
         let settings = TipKarmaSettings()
         tipPercentageStepper.value = Double(settings.loadTipPercentage())
         tipPercentageLabel.text = "\(Int(tipPercentageStepper.value))"
+        darkThemeSwitch.on = settings.loadDarkThemeOn()
+        
+        // Update views with correct theme colors.
+        setDarkColorTheme(darkThemeSwitch.on, fadeMainView: false)
+    }
+    
+    override func viewWillAppear(animated: Bool)
+    {
+        super.viewWillAppear(animated)
     }
     
     // Perform actions needed when the "Back" button is pressed.
@@ -88,6 +119,7 @@ class SettingsViewController: UIViewController
         // Save the settings.
         let settings = TipKarmaSettings()
         settings.saveTipPercentage(Int(tipPercentageStepper.value))
+        settings.saveDarkThemeOn(darkThemeSwitch.on)
         
         // Return to the primary view.
         dismissViewControllerAnimated(true, completion: nil)
@@ -98,4 +130,76 @@ class SettingsViewController: UIViewController
     {
         tipPercentageLabel.text = "\(Int(sender.value))"
     }
+    
+    // Update the color theme based on the dark theme switch.
+    @IBAction func darkThemeValueChanged(sender: UISwitch)
+    {
+        self.setDarkColorTheme(sender.on, fadeMainView: true)
+    }
+    
+    // OPTIONAL TASK: Update views with correct theme colors for either the
+    // light color theme or the dark color theme.
+    func setDarkColorTheme(darkThemeOn: Bool, fadeMainView: Bool)
+    {
+        // If the theme colors are already set correctly, there is no need
+        // to set them again.
+        if darkThemeOn == darkThemeColorsSet
+        {
+            return;
+        }
+        darkThemeColorsSet = darkThemeOn
+        
+        if (darkThemeOn)
+        {
+            tipLabel.textColor = UIColor.lightGrayColor()
+            tipPercentageLabel.textColor = UIColor.lightGrayColor()
+            tipPercentLabel.textColor = UIColor.lightGrayColor()
+            tipPercentageStepper.tintColor = UIColor.lightGrayColor()
+            darkThemeLabel.textColor = UIColor.lightGrayColor()
+            darkThemeSwitch.thumbTintColor = UIColor.init(
+                white: 0.9, alpha: 1.0)
+            navigationController!.navigationBar.barTintColor =
+                UIColor.lightGrayColor()
+        }
+        else // light color theme
+        {
+            let textRgb = CGFloat(0.235282)
+            let textColor = UIColor.init(
+                red: textRgb, green: textRgb, blue: textRgb, alpha: 1)
+            
+            tipLabel.textColor = textColor
+            tipPercentageLabel.textColor = textColor
+            tipPercentLabel.textColor = textColor
+            tipPercentageStepper.tintColor = textColor
+            darkThemeLabel.textColor = textColor
+            darkThemeSwitch.thumbTintColor = nil // default
+            navigationController!.navigationBar.barTintColor = nil // default
+        }
+        
+        // Fade the main view color for a cool effect.
+        UIView.animateWithDuration(
+            fadeMainView ? 0.25 : 0.0,
+            animations:
+            {
+                let mainViewRed = CGFloat(0.823468)
+                let mainViewGreen = CGFloat(0.894601)
+                let mainViewBlue = CGFloat(0.847952)
+                if (darkThemeOn)
+                {
+                    self.mainView.backgroundColor = UIColor.init(
+                        red: mainViewRed * 0.25, green: mainViewGreen * 0.25,
+                        blue: mainViewBlue * 0.25, alpha: 1)
+                }
+                else // light color theme
+                {
+                    self.mainView.backgroundColor = UIColor.init(
+                        red: mainViewRed, green: mainViewGreen, blue: mainViewBlue,
+                        alpha: 1)
+                }
+            }
+        )
+    }
+    
+    // Indicates whether the view colors are set to the dark color theme colors.
+    var darkThemeColorsSet = false
 }
