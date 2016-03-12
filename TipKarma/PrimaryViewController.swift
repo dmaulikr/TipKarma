@@ -4,15 +4,25 @@
 //
 //  App created as Prework for the CodePath May 2016 iOS bootcamp.
 //
-//  The concept behind the app is that tipping well results in good karma, while tipping
-//  poorly results in bad karma. This concept is reinforced using UI animations. When a
-//  tip percentage 15% or above is used, a green "karma wheel", three arrows in a circle,
-//  spins clockwise in the direction the arrows are pointing, indicating good karma. The
-//  higher the tip, the faster the karma wheel spins. When a tip percentage below 15% is
-//  used, the karma wheel spins counterclockwise, against the direction of the arrows,
-//  and the arrows turn red, indicating bad karma. A user probably would not want these
-//  negative karma indicators in a real-world app, but implementing these animations was
-//  a rewarding learning exercise for this project.
+// The concept behind the app is that tipping well results in good karma, while
+// tipping poorly results in bad karma. This concept is reinforced using UI
+// animations. When a tip percentage 15% or above is used, a green "karma
+// wheel", three arrows in a circle, spins clockwise in the direction the arrows
+// are pointing, indicating good karma. The higher the tip, the faster the karma
+// wheel spins. When a tip percentage below 15% is used, the karma wheel spins
+// counterclockwise, against the direction of the arrows, and the arrows turn
+// red, indicating bad karma. A user probably would not want these negative
+// karma indicators in a real-world app, but implementing these animations was a
+// rewarding learning exercise for this project.
+//
+// The concept of spinning a karma wheel necessitates a UI control to trigger
+// the spin, hence the "tip" button, to calculate the tip amount and total
+// amount and spin the karma wheel. Since the tip amount and total amount are
+// only updated when the tip button is pressed, rather than updating them on the
+// fly, changes the user makes to the bill amount and/or tip percentage will not
+// be accurately reflected in the tip amount and total amount until the tip
+// button is pressed. In this case, to avoid confusion, the tip amount and total
+// amount will be hidden from view until the tip button is pressed.
 //
 //  Created by Dylan Miller on 3/5/16.
 //  Copyright © 2016 Dylan Miller. All rights reserved.
@@ -41,16 +51,10 @@ class PrimaryViewController: UIViewController
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        // Note that the tip percentage stepper and label are set in
-        // viewWillAppear().
-        
         // Give the TIP button rounded corners. This might not be completely in
         // line with the iOS Human Interface Guidelines.
         tipButton.layer.cornerRadius = 10.0
         tipButton.layer.masksToBounds = true
-
-        // Calculate the tip amount and total amount.
-        caclulateTipAndTotal()
 
         // OPTIONAL TASK: Bring up the keyboard so that the user can immediately
         // start typing.
@@ -70,7 +74,7 @@ class PrimaryViewController: UIViewController
     override func viewWillAppear(animated: Bool)
     {
         super.viewWillAppear(animated)
-
+        
         // The instructions page for this assignment says: "When returning to
         // the main tip view controller from the settings page, it would be good
         // to have the tip percentage reflect the new default value." Arguments
@@ -81,12 +85,14 @@ class PrimaryViewController: UIViewController
         
         // Load the settings and set the tip percentage stepper and label.
         let settings = TipKarmaSettings()
-        tipPercentageStepper.value = Double(settings.loadTipPercentage())
-        tipPercentageLabel.text = "\(Int(tipPercentageStepper.value))"
+        let tipPercentage = settings.loadTipPercentage()
+        tipPercentageStepper.value = Double(tipPercentage)
+        tipPercentageLabel.text = "\(tipPercentage)"
 
         // OPTIONAL TASK: Load the bill amount so that it is remembered across
         // app restarts under 10 minutes.
-        let restartBillAmount = settings.loadBillAmount();
+        let restartBillAmount = settings.loadBillAmount()
+
         if (billAmount != restartBillAmount) // if they match, do not reformat text field
         {
             billAmountTextField.text =
@@ -96,6 +102,27 @@ class PrimaryViewController: UIViewController
         // Update views with correct theme colors.
         setDarkColorTheme(settings.loadDarkThemeOn())
 
+        if viewFirstAppearance
+        {
+            viewFirstAppearance = false
+
+            // Update the tip amount and total amount to reflect the loaded
+            // settings.
+            updateTipAndTotal()
+            
+            // Set the karma wheel to red if tip percentage is under 15%.
+            if tipPercentage < 15
+            {
+                let greenAlpha = self.karmaImageViewGreen.alpha
+                self.karmaImageViewGreen.alpha = self.karmaImageViewRed.alpha
+                self.karmaImageViewRed.alpha = greenAlpha
+            }
+        }
+        else
+        {
+            // Possible hide or reveal the tip amount and total amount.
+            hideTipAndTotalIfNotAccurate()
+        }
     }
     
     override func viewWillDisappear(animated: Bool)
@@ -108,14 +135,23 @@ class PrimaryViewController: UIViewController
         settings.saveBillAmount(billAmount)
     }
     
+    @IBAction func billAmountEditingChanged()
+    {
+        // Possibly hide or reveal the tip amount and total amount.
+        hideTipAndTotalIfNotAccurate()
+    }
+    
     // Update the tip percentage label based on the tip percentage stepper.
     @IBAction func tipPercentageStepperValueChanged(sender: UIStepper)
     {
         tipPercentageLabel.text = "\(Int(sender.value))"
+        
+        // Possibly hide or reveal the tip amount and total amount.
+        hideTipAndTotalIfNotAccurate()
     }
     
     // Set the tip amount and total amount and spin the karma wheel. While the
-    // CodePath demo video used a GUI design which did not require the user to
+    // CodePath demo video used a UI design which did not require the user to
     // press a button, the button is needed in my design in order to for the
     // karma wheel to spin to indicate good or bad karma.
     @IBAction func tipButtonPress(sender: UIButton)
@@ -123,8 +159,8 @@ class PrimaryViewController: UIViewController
         // Dismiss the keyboard and set billAmount.
         view.endEditing(true)
         
-        // Calculate the tip amount and total amount.
-        caclulateTipAndTotal()
+        // Update the tip amount and total amount.
+        updateTipAndTotal()
 
         // Spin the karma wheel.
         spinKarmaWheel(Int(tipPercentageStepper.value))
@@ -138,24 +174,72 @@ class PrimaryViewController: UIViewController
     
     // Calculate the tip amount and total amount based on the bill amount
     // and tip percentage.
-    // OPTIONAL TASK: Use locale specific currency and currency thousands
-    // separators.
-    func caclulateTipAndTotal()
+    func getTipAndTotal() -> (tipAmount: Double, totalAmount: Double)
     {
         let tipAmount = billAmount * tipPercentageStepper.value / 100.0
         let totalAmount = billAmount + tipAmount
+        return (tipAmount, totalAmount)
+    }
+    
+    // Update the tip amount and total amount based on the bill amount
+    // and tip percentage.
+    // OPTIONAL TASK: Use locale specific currency and currency thousands
+    // separators.
+    func updateTipAndTotal()
+    {
+        let amounts = getTipAndTotal()
 
         let formatter = NSNumberFormatter()
         formatter.numberStyle = .CurrencyStyle
-        if let tipAmountString = formatter.stringFromNumber(tipAmount)
+        if let tipAmountString =
+            formatter.stringFromNumber(amounts.tipAmount)
         {
             tipAmountLabel.text = tipAmountString
         }
-        if let tipAmountString = formatter.stringFromNumber(totalAmount)
+        if let tipAmountString =
+            formatter.stringFromNumber(amounts.totalAmount)
         {
             totalAmountLabel.text = tipAmountString
         }
+        
+        lastTipAmount = amounts.tipAmount
+        lastTotalAmount = amounts.totalAmount
+        
+        // Possibly reveal the tip amount and total amount.
+        hideTipAndTotal(false)
+    }
     
+    // Hide the tip amount and total amount if they do not accurately reflect
+    // the current bill amount and tip percentage in the UI, or reveal them if
+    // they are accurate. With of the "tip button" design of this app, it is a
+    // nice feature to hide inaccurate amounts until the tip button is pressed.
+    func hideTipAndTotalIfNotAccurate()
+    {
+        let newAmounts = getTipAndTotal()
+        let hide =
+            lastTipAmount != newAmounts.tipAmount ||
+            lastTotalAmount != newAmounts.totalAmount
+        hideTipAndTotal(hide)
+    }
+    
+    // Hide or reveal the tip amount and total amount based on the hide
+    // parameter.
+    func hideTipAndTotal(hide: Bool)
+    {
+        let newAlpha : CGFloat = hide ? 0.0 : 1.0
+        if tipAmountLabel.alpha != newAlpha ||
+            totalAmountLabel.alpha != newAlpha
+        {
+            // Fade in/out.
+            UIView.animateWithDuration(
+                0.25,
+                animations:
+                {
+                    self.tipAmountLabel.alpha = newAlpha
+                    self.totalAmountLabel.alpha = newAlpha
+                }
+            )
+        }
     }
     
     // Spin the karma wheel at a speed and direction calculated based on the tip
@@ -245,7 +329,7 @@ class PrimaryViewController: UIViewController
         // to set them again.
         if darkThemeOn == darkThemeColorsSet
         {
-            return;
+            return
         }
         darkThemeColorsSet = darkThemeOn
         
@@ -313,8 +397,17 @@ class PrimaryViewController: UIViewController
         }
     }
     
+    // Indicates whether this is the first time the view is appearing.
+    var viewFirstAppearance = true
+    
     // The current rotation in degrees of the karma wheel.
     var currentRotationDegrees = 0.0
+    
+    // The last calculated tip amount.
+    var lastTipAmount = 0.0
+    
+    // The last calculated total amount.
+    var lastTotalAmount = 0.0
     
     // Indicates whether the view colors are set to the dark color theme colors.
     var darkThemeColorsSet = false

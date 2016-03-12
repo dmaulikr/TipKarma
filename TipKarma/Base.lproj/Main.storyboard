@@ -60,6 +60,9 @@
                                 <color key="textColor" red="0.23528180800000001" green="0.23528180800000001" blue="0.23528180800000001" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
+                                <connections>
+                                    <action selector="billAmountEditingChanged" destination="me3-Bt-gd8" eventType="editingChanged" id="v0O-gY-JtE"/>
+                                </connections>
                             </textField>
                             <button opaque="NO" alpha="0.69999999999999996" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1wx-JY-e95">
                                 <rect key="frame" x="40" y="179" width="240" height="60"/>
