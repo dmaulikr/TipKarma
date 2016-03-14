@@ -2,7 +2,7 @@
 //  PrimaryViewController.swift
 //  TipKarma
 //
-//  App created as Prework for the CodePath May 2016 iOS bootcamp.
+//  App created as prework for the CodePath May 2016 iOS bootcamp.
 //
 // The concept behind the app is that tipping well results in good karma, while
 // tipping poorly results in bad karma. This concept is reinforced using UI
@@ -16,13 +16,14 @@
 // rewarding learning exercise for this project.
 //
 // The concept of spinning a karma wheel necessitates a UI control to trigger
-// the spin, hence the "tip" button, to calculate the tip amount and total
-// amount and spin the karma wheel. Since the tip amount and total amount are
-// only updated when the tip button is pressed, rather than being updated on the
-// fly, changes the user makes to the bill amount and/or tip percentage will not
-// be accurately reflected in the tip amount and total amount until the tip
-// button is pressed. In this case, to avoid confusion, the tip amount and total
-// amount will be hidden from view until the tip button is pressed.
+// the spin, hence the "Calculate" tip button, to calculate the tip amount and
+// total amount and spin the karma wheel. Since the tip amount and total amount
+// are only updated when the "Calculate" tip button is pressed, rather than
+// being updated on the fly, changes the user makes to the bill amount and/or
+// tip percentage will not be accurately reflected in the tip amount and total
+// amount until the "Calculate" tip button is pressed. In this case, to avoid
+// confusion, the tip amount and total amount will be hidden from view until the
+// "Calculate" tip button is pressed.
 //
 //  Created by Dylan Miller on 3/5/16.
 //  Copyright © 2016 Dylan Miller. All rights reserved.
@@ -43,6 +44,8 @@ class PrimaryViewController: UIViewController
     @IBOutlet weak var tipAmountLabel: UILabel!
     @IBOutlet weak var karmaImageViewGreen: UIImageView!
     @IBOutlet weak var karmaImageViewRed: UIImageView!
+    @IBOutlet weak var tipImageViewGreen: UIImageView!
+    @IBOutlet weak var tipImageViewRed: UIImageView!
     @IBOutlet weak var totalLabel: UILabel!
     @IBOutlet weak var totalAmountLabel: UILabel!
     
@@ -51,8 +54,8 @@ class PrimaryViewController: UIViewController
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        // Give the TIP button rounded corners. This might not be completely in
-        // line with the iOS Human Interface Guidelines.
+        // Give the "Calculate" tip button rounded corners. This might not be
+        // completely in line with the iOS Human Interface Guidelines.
         tipButton.layer.cornerRadius = 10.0
         tipButton.layer.masksToBounds = true
 
@@ -68,6 +71,10 @@ class PrimaryViewController: UIViewController
             karmaImageViewGreen.bounds.size.height = 2
             karmaImageViewRed.bounds.size.width = 2
             karmaImageViewRed.bounds.size.height = 2
+            tipImageViewGreen.bounds.size.width = 2
+            tipImageViewGreen.bounds.size.height = 2
+            tipImageViewRed.bounds.size.width = 2
+            tipImageViewRed.bounds.size.height = 2
         }
     }
     
@@ -79,8 +86,8 @@ class PrimaryViewController: UIViewController
         // the main tip view controller from the settings page, it would be good
         // to have the tip percentage reflect the new default value." Arguments
         // can be made for and against doing this, but it is done here since the
-        // instructions recommended it. Note that because of the "tip button"
-        // design of this app, the tip amount and total amount is not
+        // instructions recommended it. Note that because of the "Calculate" tip
+        // button design of this app, the tip amount and total amount is not
         // recalculated here.
         
         // Load the settings and set the tip percentage stepper and label.
@@ -116,13 +123,13 @@ class PrimaryViewController: UIViewController
                 let greenAlpha = self.karmaImageViewGreen.alpha
                 self.karmaImageViewGreen.alpha = self.karmaImageViewRed.alpha
                 self.karmaImageViewRed.alpha = greenAlpha
+                self.tipImageViewGreen.alpha = self.karmaImageViewGreen.alpha
+                self.tipImageViewRed.alpha = self.karmaImageViewRed.alpha
             }
         }
-        else
-        {
-            // Possible hide or reveal the tip amount and total amount.
-            hideTipAndTotalIfNotAccurate()
-        }
+
+        // Possible hide or reveal the tip amount and total amount.
+        hideTipAndTotalIfNotAccurateOrZero()
     }
     
     override func viewWillDisappear(animated: Bool)
@@ -138,7 +145,7 @@ class PrimaryViewController: UIViewController
     @IBAction func billAmountEditingChanged()
     {
         // Possibly hide or reveal the tip amount and total amount.
-        hideTipAndTotalIfNotAccurate()
+        hideTipAndTotalIfNotAccurateOrZero()
     }
     
     // Update the tip percentage label based on the tip percentage stepper.
@@ -147,13 +154,13 @@ class PrimaryViewController: UIViewController
         tipPercentageLabel.text = "\(Int(sender.value))"
         
         // Possibly hide or reveal the tip amount and total amount.
-        hideTipAndTotalIfNotAccurate()
+        hideTipAndTotalIfNotAccurateOrZero()
     }
     
     // Set the tip amount and total amount and spin the karma wheel. While the
     // CodePath demo video used a UI design which did not require the user to
-    // press a button, the button is needed in my design in order to for the
-    // karma wheel to spin to indicate good or bad karma.
+    // press a button, the "Calculate" tip button is needed in my design in
+    // order to for the karma wheel to spin to indicate good or bad karma.
     @IBAction func tipButtonPress(sender: UIButton)
     {
         // Dismiss the keyboard and set billAmount.
@@ -164,6 +171,9 @@ class PrimaryViewController: UIViewController
 
         // Spin the karma wheel.
         spinKarmaWheel(Int(tipPercentageStepper.value))
+
+        // Possibly hide or reveal the tip amount and total amount.
+        hideTipAndTotalIfNotAccurateOrZero()
     }
     
     // Dismiss the keyboard when the main view is tapped anywhere.
@@ -204,39 +214,48 @@ class PrimaryViewController: UIViewController
         
         lastTipAmount = amounts.tipAmount
         lastTotalAmount = amounts.totalAmount
-        
-        // Possibly reveal the tip amount and total amount.
-        hideTipAndTotal(false)
     }
     
     // Hide the tip amount and total amount if they do not accurately reflect
     // the current bill amount and tip percentage in the UI, or reveal them if
-    // they are accurate. With of the "tip button" design of this app, it is a
-    // nice feature to hide inaccurate amounts until the tip button is pressed.
-    func hideTipAndTotalIfNotAccurate()
+    // they are accurate. The amounts are also hidden if they are both zero.
+    // When the amounts are hidden, a "TIP" image view is revealed within the
+    // karma wheel. With the "Calculate" tip button design of this app, it is
+    // a nice feature to hide inaccurate amounts until the "Calculate" tip
+    // button is pressed.
+    func hideTipAndTotalIfNotAccurateOrZero()
     {
         let newAmounts = getTipAndTotal()
         let hide =
             lastTipAmount != newAmounts.tipAmount ||
-            lastTotalAmount != newAmounts.totalAmount
+            lastTotalAmount != newAmounts.totalAmount ||
+            (lastTipAmount == 0 && lastTotalAmount == 0)
         hideTipAndTotal(hide)
     }
     
-    // Hide or reveal the tip amount and total amount based on the hide
-    // parameter.
+    // Hide or reveal the tip amount, total amount, and "TIP" image views based
+    // on the hide parameter.
     func hideTipAndTotal(hide: Bool)
     {
-        let newAlpha : CGFloat = hide ? 0.0 : 1.0
-        if tipAmountLabel.alpha != newAlpha ||
-            totalAmountLabel.alpha != newAlpha
+        let newAmountAlpha : CGFloat = hide ? 0.0 : 1.0
+        let newTipGreenAlpha : CGFloat =
+            hide ? self.karmaImageViewGreen.alpha : 0.0
+        let newTipRedAlpha : CGFloat =
+            hide ? self.karmaImageViewRed.alpha : 0.0
+        if tipAmountLabel.alpha != newAmountAlpha ||
+            totalAmountLabel.alpha != newAmountAlpha ||
+            tipImageViewGreen.alpha != newTipGreenAlpha ||
+            tipImageViewRed.alpha != newTipRedAlpha
         {
             // Fade in/out.
             UIView.animateWithDuration(
                 0.25,
                 animations:
                 {
-                    self.tipAmountLabel.alpha = newAlpha
-                    self.totalAmountLabel.alpha = newAlpha
+                    self.tipAmountLabel.alpha = newAmountAlpha
+                    self.totalAmountLabel.alpha = newAmountAlpha
+                    self.tipImageViewGreen.alpha = newTipGreenAlpha
+                    self.tipImageViewRed.alpha = newTipRedAlpha
                 }
             )
         }
