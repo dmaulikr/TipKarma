@@ -64,7 +64,7 @@ class PrimaryViewController: UIViewController
         billAmountTextField.becomeFirstResponder()
         
         // Special auto layout adjustment for pre-iPhone 5.
-        if (UIScreen.mainScreen().bounds.size.height == 480)
+        if (UIScreen.main.bounds.size.height == 480)
         {
             print("iphone 4Ss")
             karmaImageViewGreen.bounds.size.width = 2
@@ -78,7 +78,7 @@ class PrimaryViewController: UIViewController
         }
     }
     
-    override func viewWillAppear(animated: Bool)
+    override func viewWillAppear(_ animated: Bool)
     {
         super.viewWillAppear(animated)
         
@@ -132,7 +132,7 @@ class PrimaryViewController: UIViewController
         hideTipAndTotalIfNotAccurateOrZero()
     }
     
-    override func viewWillDisappear(animated: Bool)
+    override func viewWillDisappear(_ animated: Bool)
     {
         super.viewWillDisappear(animated)
         
@@ -149,7 +149,7 @@ class PrimaryViewController: UIViewController
     }
     
     // Update the tip percentage label based on the tip percentage stepper.
-    @IBAction func tipPercentageStepperValueChanged(sender: UIStepper)
+    @IBAction func tipPercentageStepperValueChanged(_ sender: UIStepper)
     {
         tipPercentageLabel.text = "\(Int(sender.value))"
         
@@ -161,7 +161,7 @@ class PrimaryViewController: UIViewController
     // CodePath demo video used a UI design which did not require the user to
     // press a button, the "Calculate" tip button is needed in my design in
     // order to for the karma wheel to spin to indicate good or bad karma.
-    @IBAction func tipButtonPress(sender: UIButton)
+    @IBAction func tipButtonPress(_ sender: UIButton)
     {
         // Dismiss the keyboard and set billAmount.
         view.endEditing(true)
@@ -177,7 +177,7 @@ class PrimaryViewController: UIViewController
     }
     
     // Dismiss the keyboard when the main view is tapped anywhere.
-    @IBAction func onTap(sender: AnyObject)
+    @IBAction func onTap(_ sender: AnyObject)
     {
         view.endEditing(true)
     }
@@ -199,15 +199,15 @@ class PrimaryViewController: UIViewController
     {
         let amounts = getTipAndTotal()
 
-        let formatter = NSNumberFormatter()
-        formatter.numberStyle = .CurrencyStyle
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
         if let tipAmountString =
-            formatter.stringFromNumber(amounts.tipAmount)
+            formatter.string(from: NSNumber(value: amounts.tipAmount))
         {
             tipAmountLabel.text = tipAmountString
         }
         if let tipAmountString =
-            formatter.stringFromNumber(amounts.totalAmount)
+            formatter.string(from: NSNumber(value: amounts.totalAmount))
         {
             totalAmountLabel.text = tipAmountString
         }
@@ -235,7 +235,7 @@ class PrimaryViewController: UIViewController
     
     // Hide or reveal the tip amount, total amount, and "TIP" image views based
     // on the hide parameter.
-    func hideTipAndTotal(hide: Bool)
+    func hideTipAndTotal(_ hide: Bool)
     {
         let newAmountAlpha : CGFloat = hide ? 0.0 : 1.0
         let newTipGreenAlpha : CGFloat =
@@ -248,8 +248,8 @@ class PrimaryViewController: UIViewController
             tipImageViewRed.alpha != newTipRedAlpha
         {
             // Fade in/out.
-            UIView.animateWithDuration(
-                0.25,
+            UIView.animate(
+                withDuration: 0.25,
                 animations:
                 {
                     self.tipAmountLabel.alpha = newAmountAlpha
@@ -265,7 +265,7 @@ class PrimaryViewController: UIViewController
     // percentage, possibly changing the color of the wheel from green to red, or
     // vice versa.
     // OPTIONAL TASK: UI animations.
-    func spinKarmaWheel(tipPercentage: Int)
+    func spinKarmaWheel(_ tipPercentage: Int)
     {
         let seconds = 4.0
 
@@ -293,8 +293,8 @@ class PrimaryViewController: UIViewController
         // positive to negative, or vice versa.
         if (swapKarmaImageColor)
         {
-            UIView.animateWithDuration(
-                seconds / 2.0,
+            UIView.animate(
+                withDuration: seconds / 2.0,
                 animations:
                 {
                     let greenAlpha = self.karmaImageViewGreen.alpha
@@ -323,17 +323,17 @@ class PrimaryViewController: UIViewController
             let animationSeconds =
                 seconds * degreesToRotate / totalRotationDegrees * slowTheSpinMultiplier
             slowTheSpinMultiplier += 0.5 // slow the spin similar to a roulette wheel
-            UIView.animateWithDuration(
-                animationSeconds,
+            UIView.animate(
+                withDuration: animationSeconds,
                 animations:
                 {
-                    let oneDegreeInRadians = M_PI * 2.0 / 360.0
+                    let oneDegreeInRadians = Double.pi * 2.0 / 360.0
                     let endSpinRadians =
                         CGFloat(spinDirection * oneDegreeInRadians * self.currentRotationDegrees)
                     self.karmaImageViewGreen.transform =
-                        CGAffineTransformMakeRotation(endSpinRadians)
+                        CGAffineTransform(rotationAngle: endSpinRadians)
                     self.karmaImageViewRed.transform =
-                        CGAffineTransformMakeRotation(endSpinRadians)
+                        CGAffineTransform(rotationAngle: endSpinRadians)
                 }
             )
             degreesRemaining -= degreesToRotate
@@ -342,7 +342,7 @@ class PrimaryViewController: UIViewController
     
     // OPTIONAL TASK: Update views with correct theme colors for either the
     // light color theme or the dark color theme.
-    func setDarkColorTheme(darkThemeOn: Bool)
+    func setDarkColorTheme(_ darkThemeOn: Bool)
     {
         // If the theme colors are already set correctly, there is no need
         // to set them again.
@@ -361,20 +361,20 @@ class PrimaryViewController: UIViewController
             mainView.backgroundColor = UIColor.init(
                 red: mainViewRed * 0.25, green: mainViewGreen * 0.25,
                 blue: mainViewBlue * 0.25, alpha: 1)
-            billLabel.textColor = UIColor.lightGrayColor()
-            billAmountTextField.backgroundColor = UIColor.lightGrayColor()
-            tipLabel.textColor = UIColor.lightGrayColor()
-            tipPercentageLabel.textColor = UIColor.lightGrayColor()
-            tipPercentLabel.textColor = UIColor.lightGrayColor()
-            tipPercentageStepper.tintColor = UIColor.lightGrayColor()
+            billLabel.textColor = UIColor.lightGray
+            billAmountTextField.backgroundColor = UIColor.lightGray
+            tipLabel.textColor = UIColor.lightGray
+            tipPercentageLabel.textColor = UIColor.lightGray
+            tipPercentLabel.textColor = UIColor.lightGray
+            tipPercentageStepper.tintColor = UIColor.lightGray
             tipButton.setTitleColor(
                 UIColor.init(white: 0.9, alpha: 1.0),
-                forState: UIControlState.Normal)
-            tipAmountLabel.textColor = UIColor.lightGrayColor()
-            totalLabel.textColor = UIColor.lightGrayColor()
-            totalAmountLabel.textColor = UIColor.lightGrayColor()
+                for: UIControlState())
+            tipAmountLabel.textColor = UIColor.lightGray
+            totalLabel.textColor = UIColor.lightGray
+            totalAmountLabel.textColor = UIColor.lightGray
             navigationController!.navigationBar.barTintColor =
-                UIColor.lightGrayColor()
+                UIColor.lightGray
         }
         else // light color theme
         {
@@ -392,7 +392,7 @@ class PrimaryViewController: UIViewController
             tipPercentLabel.textColor = textColor
             tipPercentageStepper.tintColor = textColor
             tipButton.setTitleColor(
-                nil, forState: UIControlState.Normal) // default
+                nil, for: UIControlState()) // default
             tipAmountLabel.textColor = textColor
             totalLabel.textColor = textColor
             totalAmountLabel.textColor = textColor
@@ -407,9 +407,9 @@ class PrimaryViewController: UIViewController
         {
             if let billAmountText = billAmountTextField.text
             {
-                if let billAmountNumber = NSNumberFormatter().numberFromString(billAmountText)
+                if let billAmountNumber = Double(billAmountText)
                 {
-                    return billAmountNumber.doubleValue
+                    return billAmountNumber
                 }
             }
             return 0.0

@@ -17,10 +17,10 @@ class TipKarmaSettings
     let restartBillAmountAbsTime = "restartBillAmountAbsTime"
     
     // Save the default tip percentage to NSUserDefaults.
-    func saveTipPercentage(tipPercentage: Int)
+    func saveTipPercentage(_ tipPercentage: Int)
     {
-        let defaults = NSUserDefaults.standardUserDefaults()
-        defaults.setInteger(tipPercentage, forKey: dfltPercentageKey)
+        let defaults = UserDefaults.standard
+        defaults.set(tipPercentage, forKey: dfltPercentageKey)
         defaults.synchronize()
     }
     
@@ -29,33 +29,33 @@ class TipKarmaSettings
     // that 0 is not allowed as a default tip percentage.
     func loadTipPercentage() -> Int
     {
-        let defaults = NSUserDefaults.standardUserDefaults()
-        let tipPercentage = defaults.integerForKey(dfltPercentageKey)
+        let defaults = UserDefaults.standard
+        let tipPercentage = defaults.integer(forKey: dfltPercentageKey)
         return tipPercentage != 0 ? tipPercentage : 15
     }
     
     // Save the dark them "on" NSUserDefaults.
-    func saveDarkThemeOn(darkThemeOn: Bool)
+    func saveDarkThemeOn(_ darkThemeOn: Bool)
     {
-        let defaults = NSUserDefaults.standardUserDefaults()
-        defaults.setBool(darkThemeOn, forKey: darkThemeOnKey)
+        let defaults = UserDefaults.standard
+        defaults.set(darkThemeOn, forKey: darkThemeOnKey)
         defaults.synchronize()
     }
     
     // Load the dark theme "on" from NSUserDefaults.
     func loadDarkThemeOn() -> Bool
     {
-        let defaults = NSUserDefaults.standardUserDefaults()
-        return defaults.boolForKey(darkThemeOnKey)
+        let defaults = UserDefaults.standard
+        return defaults.bool(forKey: darkThemeOnKey)
     }
     
     // Save the "restart" bill amount to NSUserDefaults. This is used so that
     // the bill amount is remembered across app restarts under 10 minutes.
-    func saveBillAmount(billAmount: Double)
+    func saveBillAmount(_ billAmount: Double)
     {
-        let defaults = NSUserDefaults.standardUserDefaults()
-        defaults.setDouble(billAmount, forKey: restartBillAmount)
-        defaults.setDouble(
+        let defaults = UserDefaults.standard
+        defaults.set(billAmount, forKey: restartBillAmount)
+        defaults.set(
             CFAbsoluteTimeGetCurrent(), forKey: restartBillAmountAbsTime)
         defaults.synchronize()
     }
@@ -64,10 +64,10 @@ class TipKarmaSettings
     // minutes has elapsed since it was saved, 0 is returned.
     func loadBillAmount() -> Double
     {
-        let defaults = NSUserDefaults.standardUserDefaults()
-        let billAmount = defaults.doubleForKey(restartBillAmount)
+        let defaults = UserDefaults.standard
+        let billAmount = defaults.double(forKey: restartBillAmount)
         let billAmountAbsTime =
-            defaults.doubleForKey(restartBillAmountAbsTime)
+            defaults.double(forKey: restartBillAmountAbsTime)
         if (billAmountAbsTime != 0.0) // defined
         {
             let tenMinutesSeconds = 10.0 * 60.0
@@ -102,44 +102,44 @@ class SettingsViewController: UIViewController
         let settings = TipKarmaSettings()
         tipPercentageStepper.value = Double(settings.loadTipPercentage())
         tipPercentageLabel.text = "\(Int(tipPercentageStepper.value))"
-        darkThemeSwitch.on = settings.loadDarkThemeOn()
+        darkThemeSwitch.isOn = settings.loadDarkThemeOn()
         
         // Update views with correct theme colors.
-        setDarkColorTheme(darkThemeSwitch.on, fadeMainView: false)
+        setDarkColorTheme(darkThemeSwitch.isOn, fadeMainView: false)
     }
     
-    override func viewWillAppear(animated: Bool)
+    override func viewWillAppear(_ animated: Bool)
     {
         super.viewWillAppear(animated)
     }
     
     // Perform actions needed when the "Back" button is pressed.
-    @IBAction func backButtonPress(sender: UIBarButtonItem)
+    @IBAction func backButtonPress(_ sender: UIBarButtonItem)
     {
         // Save the settings.
         let settings = TipKarmaSettings()
         settings.saveTipPercentage(Int(tipPercentageStepper.value))
-        settings.saveDarkThemeOn(darkThemeSwitch.on)
+        settings.saveDarkThemeOn(darkThemeSwitch.isOn)
         
         // Return to the primary view.
-        dismissViewControllerAnimated(true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
     
     // Update the tip percentage label based on the tip percentage stepper.
-    @IBAction func tipPercentageStepperValueChanged(sender: UIStepper)
+    @IBAction func tipPercentageStepperValueChanged(_ sender: UIStepper)
     {
         tipPercentageLabel.text = "\(Int(sender.value))"
     }
     
     // Update the color theme based on the dark theme switch.
-    @IBAction func darkThemeValueChanged(sender: UISwitch)
+    @IBAction func darkThemeValueChanged(_ sender: UISwitch)
     {
-        self.setDarkColorTheme(sender.on, fadeMainView: true)
+        self.setDarkColorTheme(sender.isOn, fadeMainView: true)
     }
     
     // OPTIONAL TASK: Update views with correct theme colors for either the
     // light color theme or the dark color theme.
-    func setDarkColorTheme(darkThemeOn: Bool, fadeMainView: Bool)
+    func setDarkColorTheme(_ darkThemeOn: Bool, fadeMainView: Bool)
     {
         // If the theme colors are already set correctly, there is no need
         // to set them again.
@@ -151,15 +151,15 @@ class SettingsViewController: UIViewController
         
         if (darkThemeOn)
         {
-            tipLabel.textColor = UIColor.lightGrayColor()
-            tipPercentageLabel.textColor = UIColor.lightGrayColor()
-            tipPercentLabel.textColor = UIColor.lightGrayColor()
-            tipPercentageStepper.tintColor = UIColor.lightGrayColor()
-            darkThemeLabel.textColor = UIColor.lightGrayColor()
+            tipLabel.textColor = UIColor.lightGray
+            tipPercentageLabel.textColor = UIColor.lightGray
+            tipPercentLabel.textColor = UIColor.lightGray
+            tipPercentageStepper.tintColor = UIColor.lightGray
+            darkThemeLabel.textColor = UIColor.lightGray
             darkThemeSwitch.thumbTintColor = UIColor.init(
                 white: 0.9, alpha: 1.0)
             navigationController!.navigationBar.barTintColor =
-                UIColor.lightGrayColor()
+                UIColor.lightGray
         }
         else // light color theme
         {
@@ -177,8 +177,8 @@ class SettingsViewController: UIViewController
         }
         
         // Fade the main view color for a cool effect.
-        UIView.animateWithDuration(
-            fadeMainView ? 0.25 : 0.0,
+        UIView.animate(
+            withDuration: fadeMainView ? 0.25 : 0.0,
             animations:
             {
                 let mainViewRed = CGFloat(0.823468)
